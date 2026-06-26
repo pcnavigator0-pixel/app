@@ -25,6 +25,25 @@ This confirms the JS bundle is structurally sound for both platforms on SDK 54. 
 **not** confirm the visual layout matches your screenshots pixel-for-pixel — that part
 still needs your eyes on a real device.
 
+## Recent changes
+
+- **Fixed the header/carousel gap.** The shortcuts row had 14px top+bottom padding,
+  and the carousel had an extra 12px top margin on top of that — stacked together
+  it read as a visible blank band. Tightened to 12px/10px on the shortcuts row and
+  8px on the carousel, matching the tighter rhythm in your reference screenshot.
+- **Added an infinite-scrolling product grid to the Home screen**, matching the
+  screenshot with the "10 shown on home" counter, search bar, grid/list toggle, and
+  Filter button. Built on `useProductFeed`, which queries Supabase with real
+  `.range()` pagination (10 products per page) — it doesn't fetch everything upfront
+  and slice it client-side, so it actually saves load time and data as designed.
+  Home's scroll container is now a single `FlatList` (2-column grid) with the
+  carousel/categories/toolbar as its header, and `onEndReached` triggers the next
+  page as the user nears the bottom.
+- Product cards match the screenshot: image with wishlist heart + orange quick-add
+  button, name, "By {seller}", price, sold/views row, Compare and WhatsApp pills.
+  Quick-add, compare, WhatsApp, and "open product" actions are currently wired to
+  `console.log` placeholders — let me know when you want those connected for real.
+
 ## What's included so far
 
 - Project scaffold (Expo SDK 56, TypeScript, React Navigation native-stack + bottom-tabs, NativeWind v4)

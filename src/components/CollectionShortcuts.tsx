@@ -24,7 +24,7 @@ export default function CollectionShortcuts({
       horizontal
       showsHorizontalScrollIndicator={false}
       className="bg-white border-b border-line"
-      contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 14, gap: 26 }}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, gap: 26 }}
     >
       {SHORTCUTS.map((label, index) => {
         const isActive = index === activeIndex;

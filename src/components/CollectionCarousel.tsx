@@ -41,8 +41,8 @@ export default function CollectionCarousel({
   if (items.length === 0) return null;
 
   return (
-    <View className="mt-3">
-      <View style={{ width: CARD_WIDTH, height: CARD_HEIGHT, alignSelf: 'center' }}>
+    <View className="mt-2">
+      <View style={{ width: CARD_WIDTH, height: CARD_HEIGHT, alignSelf: 'center', marginTop: 8 }}>
         <FlatList
           ref={listRef}
           data={items}
