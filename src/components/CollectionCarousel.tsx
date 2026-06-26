@@ -40,7 +40,6 @@ export default function CollectionCarousel({
 
   if (items.length === 0) return null;
 
-  
   return (
     <View className="mt-2">
       <View style={{ width: CARD_WIDTH, height: CARD_HEIGHT, alignSelf: 'center', marginTop: 8 }}>
