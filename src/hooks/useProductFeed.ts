@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { getErrorMessage } from '../lib/format';
 import { Product } from '../types';
 
 const PAGE_SIZE = 10;
@@ -20,13 +21,38 @@ export function useProductFeed() {
     const { data, error: fetchError } = await supabase
       .from('products')
       .select(
-        'id, name, description, price, original_price, image, images, category, badge, sold, stock, image_inventory, is_trend, views, created_at, seller_id, seller_business_name'
+        'id, name, description, price, original_price, image, images, category, badge, sold, stock, image_inventory, is_trend, views, created_at, seller_id'
       )
       .order('created_at', { ascending: false })
       .range(from, to);
 
     if (fetchError) throw fetchError;
-    return (data as Product[]) || [];
+
+    const rows = (data || []) as Product[];
+    const sellerIds = Array.from(new Set(rows.map((row) => row.seller_id).filter(Boolean))) as string[];
+
+    let sellerNameById: Record<string, string> = {};
+    if (sellerIds.length > 0) {
+      const { data: sellers, error: sellerError } = await supabase
+        .from('users')
+        .select('id, business_name')
+        .in('id', sellerIds);
+
+      if (sellerError) {
+        // Don't fail the whole product load just because seller names couldn't be fetched.
+        console.warn('useProductFeed: failed to load seller names', sellerError);
+      } else {
+        sellerNameById = (sellers || []).reduce<Record<string, string>>((acc, seller: any) => {
+          if (seller.business_name) acc[seller.id] = seller.business_name;
+          return acc;
+        }, {});
+      }
+    }
+
+    return rows.map((row) => ({
+      ...row,
+      seller_business_name: row.seller_id ? sellerNameById[row.seller_id] || undefined : undefined,
+    }));
   }, []);
 
   const loadFirstPage = useCallback(async () => {
@@ -39,7 +65,8 @@ export function useProductFeed() {
       setHasMore(firstPage.length === PAGE_SIZE);
       pageRef.current = 1;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load products.');
+      console.warn('useProductFeed: failed to load first page', err);
+      setError(getErrorMessage(err));
     } finally {
       setLoadingInitial(false);
     }
@@ -60,7 +87,8 @@ export function useProductFeed() {
       setHasMore(nextPage.length === PAGE_SIZE);
       pageRef.current += 1;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load more products.');
+      console.warn('useProductFeed: failed to load next page', err);
+      setError(getErrorMessage(err));
     } finally {
       setLoadingMore(false);
       requestInFlight.current = false;
@@ -77,3 +105,4 @@ export function useProductFeed() {
     loadNextPage,
   };
 }
+

@@ -15,5 +15,19 @@ export function formatCollectionTitle(value: string) {
 }
 
 export function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Something went wrong.';
+  if (error instanceof Error) return error.message;
+
+  if (error && typeof error === 'object') {
+    const record = error as Record<string, unknown>;
+    if (typeof record.message === 'string' && record.message) {
+      // Supabase PostgrestError shape: { message, details, hint, code }
+      const parts = [record.message];
+      if (typeof record.hint === 'string' && record.hint) parts.push(`Hint: ${record.hint}`);
+      if (typeof record.code === 'string' && record.code) parts.push(`(code ${record.code})`);
+      return parts.join(' ');
+    }
+  }
+
+  return 'Something went wrong.';
 }
+

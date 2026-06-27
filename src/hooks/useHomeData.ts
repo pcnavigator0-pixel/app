@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { resolveProductImagePath } from '../lib/images';
-import { getStableIndex, formatCollectionTitle } from '../lib/format';
+import { getStableIndex, formatCollectionTitle, getErrorMessage } from '../lib/format';
 import { Product } from '../types';
 
 export type CollectionItem = {
@@ -47,7 +47,8 @@ export function useHomeData() {
       if (fetchError) throw fetchError;
       setProducts((data as Product[]) || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load products.');
+      console.warn('useHomeData: failed to load products', err);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

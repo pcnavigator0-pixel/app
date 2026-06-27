@@ -24,7 +24,14 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Shop Corner uses your location to calculate delivery distance and fees for your order."
+        }
+      ]
+    ]
   }
 }
-

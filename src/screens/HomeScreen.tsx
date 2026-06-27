@@ -6,8 +6,14 @@ import {
   FlatList,
   RefreshControl,
   Dimensions,
+  Alert,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { CompositeNavigationProp } from '@react-navigation/native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import HomeHeader from '../components/HomeHeader';
 import CollectionShortcuts from '../components/CollectionShortcuts';
 import CollectionCarousel from '../components/CollectionCarousel';
@@ -18,13 +24,20 @@ import { useHomeData } from '../hooks/useHomeData';
 import { useProductFeed } from '../hooks/useProductFeed';
 import { useCart } from '../hooks/useCart';
 import { Product } from '../types';
+import { RootStackParamList, TabParamList } from '../navigation/types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const GRID_PADDING = 16;
 const GRID_GAP = 12;
 const CARD_WIDTH = (SCREEN_WIDTH - GRID_PADDING * 2 - GRID_GAP) / 2;
 
+type HomeNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, 'Home'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
+
 export default function HomeScreen() {
+  const navigation = useNavigation<HomeNavigationProp>();
   const { collectionItems, categoryChips, loading: loadingCollections, error: collectionsError, refresh: refreshCollections } = useHomeData();
   const {
     products,
@@ -35,7 +48,7 @@ export default function HomeScreen() {
     loadFirstPage,
     loadNextPage,
   } = useProductFeed();
-  const { cartCount, refreshCart } = useCart();
+  const { cartCount, refreshCart, addToCart } = useCart();
 
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,6 +79,26 @@ export default function HomeScreen() {
     });
   };
 
+  const handleQuickAdd = async (product: Product) => {
+    const variants = product.image_inventory || [];
+    if (variants.length > 0) {
+      // Multiple image variants exist — open the detail screen so the user picks one,
+      // same as the web app requiring a color/variant choice before adding to cart.
+      navigation.navigate('ProductDetail', { productId: product.id });
+      return;
+    }
+
+    const result = await addToCart(product.id, { quantity: 1 });
+    if (!result.success) {
+      Alert.alert('Could not add to cart', result.message || 'Something went wrong.');
+    }
+  };
+
+  const handleWhatsApp = (product: Product) => {
+    const text = encodeURIComponent(`Hi! I'm interested in "${product.name}" (RWF ${Number(product.price || 0).toLocaleString()}).`);
+    Linking.openURL(`https://wa.me/?text=${text}`);
+  };
+
   const filteredProducts = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
     if (!normalizedQuery) return products;
@@ -78,11 +111,11 @@ export default function HomeScreen() {
         product={item}
         cardWidth={CARD_WIDTH}
         isWishlisted={wishlistedIds.has(item.id)}
-        onPress={() => console.log('open product', item.id)}
-        onQuickAdd={() => console.log('quick add', item.id)}
+        onPress={() => navigation.navigate('ProductDetail', { productId: item.id })}
+        onQuickAdd={() => handleQuickAdd(item)}
         onToggleWishlist={() => handleToggleWishlist(item.id)}
         onCompare={() => console.log('compare', item.id)}
-        onWhatsApp={() => console.log('whatsapp', item.id)}
+        onWhatsApp={() => handleWhatsApp(item)}
       />
     ),
     [wishlistedIds]
@@ -132,7 +165,7 @@ export default function HomeScreen() {
         cartCount={cartCount}
         onMenuPress={() => console.log('open menu')}
         onSearchPress={() => console.log('open search')}
-        onCartPress={() => console.log('open cart')}
+        onCartPress={() => navigation.navigate('Cart')}
       />
       <CollectionShortcuts onPress={(label) => console.log('shortcut pressed:', label)} />
 
@@ -163,4 +196,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
