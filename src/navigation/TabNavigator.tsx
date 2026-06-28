@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import CartScreen from '../screens/CartScreen';
+import AccountScreen from '../screens/AccountScreen';
 import PlaceholderScreen from '../screens/PlaceholderScreen';
 import FloatingTabBar from './FloatingTabBar';
 import { TabParamList } from './types';
@@ -29,10 +30,9 @@ export default function TabNavigator() {
       <Tab.Screen name="Wishlist">
         {() => <PlaceholderScreen label="Wishlist" />}
       </Tab.Screen>
-      <Tab.Screen name="Account">
-        {() => <PlaceholderScreen label="Account" />}
-      </Tab.Screen>
+      <Tab.Screen name="Account" component={AccountScreen} />
     </Tab.Navigator>
   );
 }
+
 
