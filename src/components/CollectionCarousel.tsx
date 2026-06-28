@@ -15,7 +15,10 @@ import { CollectionItem } from '../hooks/useHomeData';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 32;
-const CARD_HEIGHT = 460;
+// Matches the reference design's proportions (roughly square, not elongated).
+// Using a ratio instead of a fixed pixel height keeps this correct across
+// different screen widths, instead of looking too tall on narrower phones.
+const CARD_HEIGHT = Math.round(CARD_WIDTH * 0.95);
 
 export default function CollectionCarousel({
   items,
@@ -71,7 +74,7 @@ export default function CollectionCarousel({
                   borderBottomRightRadius: 24,
                 }}
               />
-              <View className="absolute left-5 right-5 bottom-16">
+              <View className="absolute left-5 right-5 bottom-12">
                 <Text className="text-white text-[12px] font-bold tracking-[2px] mb-2 opacity-90">
                   {item.eyebrow.toUpperCase()}
                 </Text>
